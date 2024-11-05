@@ -1,3 +1,6 @@
+import { Link } from "@remix-run/react";
+import { Button } from "~/components/Button";
+
 export const meta = () => {
   return [
     { title: "Desserts" },
@@ -149,7 +152,9 @@ function Dessert({ dessert }) {
       <Button>Add to cart</Button>
 
       <p className="mt-2 text-gray-400">{dessert.category}</p>
-      <h2 className="mt-2">{dessert.title}</h2>
+      <Link to="/dessert">
+        <h2 className="mt-2">{dessert.title}</h2>
+      </Link>
       <p className="mt-2 text-orange-500 font-semibold">{dessert.price}</p>
     </article>
   );
@@ -171,13 +176,5 @@ function CartItem({ item }) {
         <button className="w-6 h-6 rounded-full border border-white">X</button>
       </div>
     </li>
-  );
-}
-
-function Button({ children }) {
-  return (
-    <button className="mt-4 bg-orange-500 hover:bg-orange-300 duration-300 transition ease-in-out px-4 py-2 text-black rounded-md">
-      {children}
-    </button>
   );
 }

@@ -1,4 +1,5 @@
 import {
+  Link,
   Links,
   Meta,
   Outlet,
@@ -32,6 +33,21 @@ export function Layout({ children }) {
         <Links />
       </head>
       <body>
+        <header>
+          <nav className="flex justify-between items-center">
+            <Link to="/">
+              <img src="/logo.svg" alt="Logo" className="w-10" />
+            </Link>
+            <ul className="flex gap-2 items-center">
+              <li>
+                <Link to="/">Home</Link>
+              </li>
+              <li>
+                <Link to="/about">About</Link>
+              </li>
+            </ul>
+          </nav>
+        </header>
         {children}
         <ScrollRestoration />
         <Scripts />
