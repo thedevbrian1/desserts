@@ -45,6 +45,14 @@ export function Layout({ children }) {
               <li>
                 <Link to="/about">About</Link>
               </li>
+              <li>
+                <Link
+                  to="/new-dessert"
+                  className="bg-orange-500 px-4 py-2 rounded-md text-black"
+                >
+                  New Dessert
+                </Link>
+              </li>
             </ul>
           </nav>
         </header>

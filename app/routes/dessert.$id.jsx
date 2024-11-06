@@ -1,15 +1,24 @@
+import { useLoaderData } from "@remix-run/react";
 import { Button } from "~/components/Button";
 import { Input } from "~/components/Input";
 import { Label } from "~/components/Label";
 import { Textarea } from "~/components/Textarea";
+import desserts from "~/desserts.json";
+
+export async function loader({ params }) {
+  let id = params.id;
+  let dessert = desserts.find((item) => item.id === Number(id));
+  return dessert;
+}
 
 export default function Dessert() {
+  let dessert = useLoaderData();
   return (
     <main className="lg:max-w-5xl mx-auto">
-      <h1>Waffle with berries</h1>
+      <h1>{dessert.title}</h1>
       <img
-        src="https://images.unsplash.com/photo-1513456753721-b3f94be66822?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-        alt=""
+        src={dessert.imageSrc}
+        alt={dessert.altText}
         className="h-96 w-full object-cover rounded-lg mt-8"
       />
       {/* Content */}
