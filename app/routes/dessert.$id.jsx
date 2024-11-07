@@ -1,13 +1,19 @@
 import { useLoaderData } from "@remix-run/react";
+import { ObjectId } from "mongodb";
 import { Button } from "~/components/Button";
 import { Input } from "~/components/Input";
 import { Label } from "~/components/Label";
 import { Textarea } from "~/components/Textarea";
-import desserts from "~/desserts.json";
+// import desserts from "~/desserts.json";
+import { client } from "~/mongoClient";
 
 export async function loader({ params }) {
   let id = params.id;
-  let dessert = desserts.find((item) => item.id === Number(id));
+  let db = client.db("desserts");
+  let collection = db.collection("desserts");
+
+  let dessert = await collection.findOne({ _id: new ObjectId(id) });
+
   return dessert;
 }
 
@@ -22,14 +28,7 @@ export default function Dessert() {
         className="h-96 w-full object-cover rounded-lg mt-8"
       />
       {/* Content */}
-      <p className="mt-8">
-        Lorem ipsum dolor sit amet consectetur adipisicing elit. Quidem odit
-        voluptas quae atque quis cupiditate, animi quos dignissimos, optio
-        corporis non voluptatem at laborum assumenda recusandae cumque
-        perspiciatis minus eveniet repellat ut beatae! Impedit exercitationem
-        deleniti nam quisquam saepe eius natus possimus modi omnis, maiores
-        consequuntur corporis facere nesciunt accusantium?
-      </p>
+      <div className="mt-8">{dessert.content}</div>
       <h2 className="mt-8">Reviews</h2>
 
       <div className="mt-4 flex flex-col gap-4 max-w-xl">

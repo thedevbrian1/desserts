@@ -1,6 +1,8 @@
 import { Link, useLoaderData } from "@remix-run/react";
+import { ObjectId } from "mongodb";
 import { Button } from "~/components/Button";
-import desserts from "~/desserts.json";
+import { client } from "~/mongoClient";
+// import desserts from "~/desserts.json";
 
 export const meta = () => {
   return [
@@ -12,6 +14,11 @@ export const meta = () => {
 export async function loader() {
   // Handles GET requests
   // Used for reading data
+
+  let db = client.db("desserts");
+  let collection = db.collection("desserts");
+
+  let desserts = await collection.find().toArray();
   return desserts;
 }
 
@@ -62,7 +69,7 @@ export default function Index() {
         <h1 className="text-2xl lg:text-4xl font-semibold">Desserts</h1>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-4 mt-8">
           {desserts.map((item) => (
-            <Dessert key={item.id} dessert={item} />
+            <Dessert key={item._id} dessert={item} />
           ))}
         </div>
       </section>
@@ -80,6 +87,7 @@ export default function Index() {
 }
 
 function Dessert({ dessert }) {
+  let id = new ObjectId(dessert._id);
   return (
     <article>
       <img
@@ -90,10 +98,14 @@ function Dessert({ dessert }) {
       <Button>Add to cart</Button>
 
       <p className="mt-2 text-gray-400">{dessert.category}</p>
-      <Link to={`/dessert/${dessert.id}`} prefetch="intent">
-        <h2 className="mt-2">{dessert.title}</h2>
+      <Link
+        to={`/dessert/${id}`}
+        prefetch="intent"
+        className="hover:text-orange-300 hover:underline transition duration-300 ease-in-out"
+      >
+        <h2 className="mt-2 ">{dessert.title}</h2>
       </Link>
-      <p className="mt-2 text-orange-500 font-semibold">{dessert.price}</p>
+      <p className="mt-2 text-orange-500 font-semibold">${dessert.price}</p>
     </article>
   );
 }

@@ -1,9 +1,10 @@
-import { json, useActionData } from "@remix-run/react";
+import { json, redirect, useActionData } from "@remix-run/react";
 import { Button } from "~/components/Button";
 import { FormSpacer } from "~/components/FormSpacer";
 import { Input } from "~/components/Input";
 import { Label } from "~/components/Label";
 import { Textarea } from "~/components/Textarea";
+import { client } from "~/mongoClient";
 import { validate } from "~/utils/validation";
 
 export async function action({ request }) {
@@ -11,6 +12,7 @@ export async function action({ request }) {
 
   let formData = await request.formData();
 
+  // Get the data submitted from the form
   let title = formData.get("title");
   let category = formData.get("category");
   let price = formData.get("price");
@@ -25,6 +27,7 @@ export async function action({ request }) {
   console.log({ altText });
   console.log({ content });
 
+  // Validation
   let fieldErrors = {
     title: validate(title),
     category: validate(category),
@@ -34,6 +37,7 @@ export async function action({ request }) {
     content: validate(content),
   };
 
+  // Return errors if any
   if (Object.values(fieldErrors).some(Boolean)) {
     return json(
       { fieldErrors },
@@ -45,12 +49,30 @@ export async function action({ request }) {
 
   // Add dessert to db
 
-  return null;
+  let db = client.db("desserts");
+  let collection = db.collection("desserts");
+
+  let dessertObj = {
+    title,
+    category,
+    price,
+    imageSrc,
+    altText,
+    content,
+  };
+
+  let result = await collection.insertOne(dessertObj);
+  console.log({ result });
+
+  let dessertId = result.insertedId;
+
+  // return null;
+  // res.redirect()
+  return redirect(`/dessert/${dessertId}`);
 }
 
 export default function NewDessert() {
   let actionData = useActionData();
-  console.log({ actionData });
   return (
     <main className="lg:max-w-3xl mx-auto mt-16">
       <h1>Create a new dessert</h1>
