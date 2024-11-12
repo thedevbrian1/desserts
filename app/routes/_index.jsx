@@ -1,8 +1,6 @@
 import { Link, useLoaderData } from "@remix-run/react";
-import { ObjectId } from "mongodb";
 import { Button } from "~/components/Button";
-import { client } from "~/mongoClient";
-// import desserts from "~/desserts.json";
+import { client } from "~/mongoClient.server";
 
 export const meta = () => {
   return [
@@ -19,7 +17,14 @@ export async function loader() {
   let collection = db.collection("desserts");
 
   let desserts = await collection.find().toArray();
-  return desserts;
+
+  // Construct a new array with string ids
+  let newDesserts = Array.from(desserts).map((item) => ({
+    ...item,
+    _id: item._id.toString(),
+  }));
+
+  return newDesserts;
 }
 
 // export async function action() {
@@ -45,6 +50,8 @@ export async function loader() {
 
 export default function Index() {
   let desserts = useLoaderData();
+  console.log({ desserts });
+
   let cartItems = [
     {
       title: "Classic Tiramisu",
@@ -73,7 +80,6 @@ export default function Index() {
           ))}
         </div>
       </section>
-
       <section className="bg-slate-600 p-4 rounded-lg space-y-4 lg:min-w-72">
         <h2>Your Cart (7)</h2>
         <ul className="divide-y divide-slate-500">
@@ -87,7 +93,8 @@ export default function Index() {
 }
 
 function Dessert({ dessert }) {
-  let id = new ObjectId(dessert._id);
+  let id = dessert._id;
+  // console.log({ dessert });
   return (
     <article>
       <img

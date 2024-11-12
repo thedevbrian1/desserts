@@ -1,10 +1,17 @@
-import { json, redirect, useActionData } from "@remix-run/react";
+import {
+  Form,
+  json,
+  redirect,
+  useActionData,
+  useNavigation,
+} from "@remix-run/react";
 import { Button } from "~/components/Button";
 import { FormSpacer } from "~/components/FormSpacer";
+import { ThreeDots } from "~/components/Icon";
 import { Input } from "~/components/Input";
 import { Label } from "~/components/Label";
 import { Textarea } from "~/components/Textarea";
-import { client } from "~/mongoClient";
+import { client } from "~/mongoClient.server";
 import { validate } from "~/utils/validation";
 
 export async function action({ request }) {
@@ -73,10 +80,14 @@ export async function action({ request }) {
 
 export default function NewDessert() {
   let actionData = useActionData();
+  let navigation = useNavigation();
+
+  let isSubmitting = navigation.state === "submitting";
+
   return (
     <main className="lg:max-w-3xl mx-auto mt-16">
       <h1>Create a new dessert</h1>
-      <form method="post" className="mt-8">
+      <Form method="post" className="mt-8">
         <FormSpacer>
           <Label htmlFor="title">Title</Label>
           <Input type="text" name="title" id="title" />
@@ -84,7 +95,9 @@ export default function NewDessert() {
             <p className="text-red-500 text-sm">
               {actionData.fieldErrors.title}
             </p>
-          ) : null}
+          ) : (
+            <>&nbsp;</>
+          )}
         </FormSpacer>
 
         <FormSpacer>
@@ -94,7 +107,9 @@ export default function NewDessert() {
             <p className="text-red-500 text-sm">
               {actionData.fieldErrors.category}
             </p>
-          ) : null}
+          ) : (
+            <>&nbsp;</>
+          )}
         </FormSpacer>
 
         <FormSpacer>
@@ -104,7 +119,9 @@ export default function NewDessert() {
             <p className="text-red-500 text-sm">
               {actionData.fieldErrors.price}
             </p>
-          ) : null}
+          ) : (
+            <>&nbsp;</>
+          )}
         </FormSpacer>
 
         <FormSpacer>
@@ -114,7 +131,9 @@ export default function NewDessert() {
             <p className="text-red-500 text-sm">
               {actionData.fieldErrors.imageSrc}
             </p>
-          ) : null}
+          ) : (
+            <>&nbsp;</>
+          )}
         </FormSpacer>
 
         <FormSpacer>
@@ -124,7 +143,9 @@ export default function NewDessert() {
             <p className="text-red-500 text-sm">
               {actionData.fieldErrors.altText}
             </p>
-          ) : null}
+          ) : (
+            <>&nbsp;</>
+          )}
         </FormSpacer>
 
         <FormSpacer>
@@ -134,11 +155,21 @@ export default function NewDessert() {
             <p className="text-red-500 text-sm">
               {actionData.fieldErrors.content}
             </p>
-          ) : null}
+          ) : (
+            <>&nbsp;</>
+          )}
         </FormSpacer>
 
-        <Button>Add dessert</Button>
-      </form>
+        <Button>
+          {isSubmitting ? (
+            <span className="w-10">
+              <ThreeDots />
+            </span>
+          ) : (
+            "Add dessert"
+          )}
+        </Button>
+      </Form>
     </main>
   );
 }

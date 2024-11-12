@@ -1,11 +1,20 @@
-import { useLoaderData } from "@remix-run/react";
+import {
+  Form,
+  json,
+  useActionData,
+  useLoaderData,
+  useNavigation,
+} from "@remix-run/react";
 import { ObjectId } from "mongodb";
 import { Button } from "~/components/Button";
+import { ThreeDots } from "~/components/Icon";
 import { Input } from "~/components/Input";
 import { Label } from "~/components/Label";
 import { Textarea } from "~/components/Textarea";
+import { ValidationError } from "~/components/ValidationError";
 // import desserts from "~/desserts.json";
-import { client } from "~/mongoClient";
+import { client } from "~/mongoClient.server";
+import { validate } from "~/utils/validation";
 
 export async function loader({ params }) {
   let id = params.id;
@@ -17,8 +26,58 @@ export async function loader({ params }) {
   return dessert;
 }
 
+export async function action({ request, params }) {
+  let id = params.id;
+
+  let formData = await request.formData();
+
+  // Get values submitted from the form
+  let username = formData.get("username");
+  let review = formData.get("review");
+
+  // Validate and return errors if any
+  let fieldErrors = {
+    username: validate(username),
+    review: validate(review),
+  };
+
+  if (Object.values(fieldErrors).some(Boolean)) {
+    return json({ fieldErrors }, { status: 400 });
+  }
+
+  // Add a review to the dessert
+  let db = client.db("desserts");
+  let collection = db.collection("desserts");
+
+  let result = await collection.updateOne(
+    { _id: new ObjectId(id) },
+    {
+      $push: {
+        reviews: {
+          username,
+          review,
+        },
+      },
+    }
+  );
+
+  console.log({ result });
+
+  return null;
+}
+
 export default function Dessert() {
   let dessert = useLoaderData();
+
+  let actionData = useActionData();
+
+  let navigation = useNavigation();
+  console.log({ navigation });
+
+  let isSubmitting = navigation.state === "submitting";
+
+  console.log({ isSubmitting });
+
   return (
     <main className="lg:max-w-5xl mx-auto">
       <h1>{dessert.title}</h1>
@@ -32,28 +91,56 @@ export default function Dessert() {
       <h2 className="mt-8">Reviews</h2>
 
       <div className="mt-4 flex flex-col gap-4 max-w-xl">
-        <Review name="Brian Mwangi" content="This is a fantastic meal!" />
-        <Review name="Jane Doe" content="Best meal ever!" />
+        {dessert.reviews ? (
+          dessert.reviews.map((item, index) => (
+            <Review key={index} name={item.username} content={item.review} />
+          ))
+        ) : (
+          <p className="text-gray-300">No reviews yet</p>
+        )}
       </div>
 
-      <form method="post" className="max-w-xl mt-8">
+      <Form method="post" className="max-w-xl mt-8">
         <fieldset>
           <legend>Add review</legend>
+
           <div className="flex flex-col gap-1 mt-4">
             <Label htmlFor="username">Username</Label>
-            <Input type="text" name="username" id="username" />
+            <Input
+              type="text"
+              name="username"
+              id="username"
+              hasError={actionData?.fieldErrors?.username}
+            />
+            {actionData?.fieldErrors.username ? (
+              <ValidationError>
+                {actionData.fieldErrors.username}
+              </ValidationError>
+            ) : (
+              <>&nbsp;</>
+            )}
           </div>
-          {/* <label >Username</label> */}
-          {/* <input type="text" name="username" id="username" /> */}
 
           <div className="flex flex-col gap-1 mt-2">
             <Label htmlFor="review">Review</Label>
             <Textarea name="review" id="review" />
+            {actionData?.fieldErrors.review ? (
+              <ValidationError>{actionData.fieldErrors.review}</ValidationError>
+            ) : (
+              <>&nbsp;</>
+            )}
           </div>
-
-          <Button>Submit review</Button>
+          <Button>
+            {isSubmitting ? (
+              <span className="w-10">
+                <ThreeDots />
+              </span>
+            ) : (
+              "Submit review"
+            )}
+          </Button>
         </fieldset>
-      </form>
+      </Form>
     </main>
   );
 }
